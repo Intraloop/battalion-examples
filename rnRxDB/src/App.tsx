@@ -26,22 +26,19 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
-
-import PouchDB from '../pouchdb';
+import useDatabase from './db/database';
 
 const Section: React.FC<{
   title: string;
 }> = ({children, title}) => {
   const isDarkMode = useColorScheme() === 'dark';
+  const {db, loading} = useDatabase();
 
-  const openDatabase = async () => {
-    const db = new PouchDB('mydb.db', {adapter: 'react-native-sqlite'});
-    console.log('db: ', db);
-  };
+  if (!db && loading) {
+    return null;
+  }
 
-  useEffect(() => {
-    openDatabase();
-  }, []);
+  console.log('db: ', db);
 
   return (
     <View style={styles.sectionContainer}>
