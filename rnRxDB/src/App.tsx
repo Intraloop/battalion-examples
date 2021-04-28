@@ -27,7 +27,7 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-import PouchDB from './pouchdb';
+import PouchDB from '../pouchdb';
 
 const Section: React.FC<{
   title: string;
