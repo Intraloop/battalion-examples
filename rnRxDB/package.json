@@ -8,7 +8,9 @@
     "pod": "pod install --project-directory=ios",
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "server:start": "docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -p 5984:5984 --name rn_rxdb_couchdb -d couchdb",
+    "server:stop": "docker stop rn_rxdb_couchdb && docker rm rn_rxdb_couchdb"
   },
   "dependencies": {
     "@craftzdog/pouchdb-core-react-native": "^7.2.2",
