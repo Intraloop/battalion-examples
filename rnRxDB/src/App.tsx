@@ -38,7 +38,6 @@ const App = () => {
     if (db && !loading) {
       const sub = db.heroes.find().$.subscribe(_heroes => {
         if (_heroes) {
-          console.log('observable fired');
           setHeroes(_heroes);
         }
       });
@@ -46,7 +45,6 @@ const App = () => {
     }
 
     return () => {
-      console.log('unsubscribe called!');
       subs.forEach(sub => sub.unsubscribe());
     };
   }, [db, loading]);
@@ -57,9 +55,11 @@ const App = () => {
 
   const addHero = async () => {
     const color = getRandomColor();
-    console.log(`addHero: name: ${name}, color: ${color}`);
-    // console.log('db.heroes: ', db.heroes);
-    await db.heroes.insert({name: name, color: color});
+    if (name !== '') {
+      console.log(`addHero: name: ${name}, color: ${color}`);
+      await db.heroes.insert({name: name, color: color});
+      setName('');
+    }
   };
 
   const getRandomColor = () => {
@@ -72,20 +72,18 @@ const App = () => {
   };
 
   return (
-    <View style={styles.topContainer}>
+    <SafeAreaView style={styles.topContainer}>
       <StatusBar backgroundColor="#55C7F7" barStyle="light-content" />
-      <Text style={styles.title}>React native rxdb example</Text>
+      <Text style={styles.title}>Add your favorite hero!</Text>
 
       <ScrollView style={styles.heroesList}>
         <View style={styles.card}>
-          {name.length > 1 && (
-            <TouchableOpacity onPress={addHero}>
-              <Image
-                style={styles.plusImage}
-                source={require('../assets/plusIcon.png')}
-              />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity onPress={addHero}>
+            <Image
+              style={styles.plusImage}
+              source={require('../assets/add.png')}
+            />
+          </TouchableOpacity>
           <TextInput
             style={styles.input}
             value={name}
@@ -107,7 +105,7 @@ const App = () => {
           </View>
         ))}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -139,7 +137,6 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    color: '#D2DCE1',
   },
   card: {
     flex: 1,

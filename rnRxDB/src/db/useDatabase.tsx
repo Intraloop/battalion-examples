@@ -13,6 +13,11 @@ type Collections = {
   heroes: HeroCollection;
 };
 
+const dbName = 'db1';
+const syncUrl = 'http://localhost:5984/';
+
+console.log('remote db: ', syncUrl + dbName);
+
 const useDatabase = () => {
   const [db, setDb] = useState<RxDatabase<Collections>>(undefined);
   const [loading, setLoading] = useState(false);
@@ -23,7 +28,7 @@ const useDatabase = () => {
       setLoading(true);
       try {
         const rxdb = await createRxDatabase<Collections>({
-          name: 'mydatabase',
+          name: dbName,
           adapter: 'react-native-sqlite',
           multiInstance: false,
         });
@@ -32,16 +37,37 @@ const useDatabase = () => {
             schema: HeroSchema,
           },
         });
-        // rxdb.heroes.sync({
-        //   remote: 'https://somewhere',
-        //   options: {
-        //     live: true,
-        //     retry: true,
-        //   },
-        // });
+        const replicationState = rxdb.heroes.sync({
+          remote: syncUrl + dbName + '/',
+          options: {
+            live: true,
+            retry: true,
+          },
+          waitForLeadership: false,
+        });
+        replicationState.change$.subscribe(change =>
+          console.log('change: ', change),
+        );
+        replicationState.docs$.subscribe(docData =>
+          console.log('doc: ', docData),
+        );
+        replicationState.denied$.subscribe(docData =>
+          console.log('denied: ', docData),
+        );
+        replicationState.active$.subscribe(active =>
+          console.log('active: ', active),
+        );
+        replicationState.alive$.subscribe(alive =>
+          console.log('alive: ', alive),
+        );
+        replicationState.complete$.subscribe(completed =>
+          console.log('completed: ', completed),
+        );
+        replicationState.error$.subscribe(err => console.dir('error: ', err));
         setDb(rxdb);
       } catch (err) {
         setError(err);
+        console.log('error: ', err);
       }
       setLoading(false);
     };
