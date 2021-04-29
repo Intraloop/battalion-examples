@@ -13,8 +13,8 @@ type Collections = {
   heroes: HeroCollection;
 };
 
-const dbName = 'db1';
-const syncUrl = 'http://localhost:5984/';
+const dbName = 'heroes';
+const syncUrl = 'http://admin:password@localhost:5984/';
 
 console.log('remote db: ', syncUrl + dbName);
 
