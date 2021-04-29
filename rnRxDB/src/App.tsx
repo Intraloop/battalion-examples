@@ -62,6 +62,11 @@ const App = () => {
     }
   };
 
+  const removeHero = async (hero_name: string) => {
+    const found = await db.heroes.find().where('name').eq(hero_name);
+    await found.remove();
+  };
+
   const getRandomColor = () => {
     const letters = '0123456789ABCDEF';
     let color = '#';
@@ -93,15 +98,23 @@ const App = () => {
         {heroes.length === 0 && <Text>No heroes to display ...</Text>}
         {heroes.map((hero, index) => (
           <View style={styles.card} key={index}>
-            <View
-              style={[
-                styles.colorBadge,
-                {
-                  backgroundColor: hero.color,
-                },
-              ]}
-            />
-            <Text style={styles.heroName}>{hero.name}</Text>
+            <View style={styles.row}>
+              <View
+                style={[
+                  styles.colorBadge,
+                  {
+                    backgroundColor: hero.color,
+                  },
+                ]}
+              />
+              <Text style={styles.heroName}>{hero.name}</Text>
+            </View>
+            <TouchableOpacity onPress={() => removeHero(hero.name)}>
+              <Image
+                style={styles.plusImage}
+                source={require('../assets/minus.png')}
+              />
+            </TouchableOpacity>
           </View>
         ))}
       </ScrollView>
@@ -147,6 +160,10 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderBottomColor: '#D2DCE1',
     borderBottomWidth: 0.5,
+  },
+  row: {
+    flex: 1,
+    flexDirection: 'row',
   },
   colorBadge: {
     height: 30,
