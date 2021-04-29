@@ -1,6 +1,6 @@
 # rnRxDB
 
-This project is an example of RxDB working with react-native, syncing to a couchdb container running on Docker.
+This project is an example of RxDB working with a react-native app and syncing to a couchdb container running on Docker.
 
 To run (these steps assume you have docker installed and have previously ran react-native apps):
 - Open 3 terminals in the `<repo_location>/battalion-examples/rnrxdb` directory
