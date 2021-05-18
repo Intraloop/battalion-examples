@@ -43,7 +43,7 @@ const useDatabase = () => {
             live: true,
             retry: true,
           },
-          waitForLeadership: false,
+          // waitForLeadership: false,
         });
         replicationState.change$.subscribe(change =>
           console.log('change: ', change),
