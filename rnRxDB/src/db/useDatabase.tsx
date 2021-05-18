@@ -1,5 +1,10 @@
 import {useEffect, useState} from 'react';
-import {addRxPlugin, createRxDatabase, RxDatabase} from 'rxdb';
+import {
+  addRxPlugin,
+  createRxDatabase,
+  removeRxDatabase,
+  RxDatabase,
+} from 'rxdb';
 import SQLite from 'react-native-sqlite-2';
 import SQLiteAdapterFactory from 'pouchdb-adapter-react-native-sqlite';
 import {HeroCollection, HeroSchema} from './schema/Hero';
@@ -27,6 +32,8 @@ const useDatabase = () => {
     const create_db = async () => {
       setLoading(true);
       try {
+        // if it exists, delete it for dev purposes
+        await removeRxDatabase(dbName, 'react-native-sqlite');
         const rxdb = await createRxDatabase<Collections>({
           name: dbName,
           adapter: 'react-native-sqlite',
