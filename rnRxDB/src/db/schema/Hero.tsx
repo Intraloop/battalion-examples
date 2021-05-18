@@ -10,7 +10,7 @@ export type HeroDocument = RxDocument<Hero>;
 export type HeroCollection = RxCollection<Hero>;
 
 export const HeroSchema: RxJsonSchema<Hero> = {
-  version: 0,
+  version: 1,
   title: 'hero schema',
   description: 'describes a simple hero',
   type: 'object',
