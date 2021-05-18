@@ -78,10 +78,8 @@ const useDatabase = () => {
       }
       setLoading(false);
     };
-    if (!db && !loading) {
-      create_db();
-    }
-  }, [db, loading]);
+    create_db();
+  }, []);
 
   return {db, loading, error};
 };
