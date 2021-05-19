@@ -10,11 +10,14 @@ import {
   Image,
   TextInput,
   Dimensions,
+  Button,
 } from 'react-native';
 
 import {Subscription} from 'rxjs';
 import {Hero} from './db/schema/Hero';
 import useDatabase from './db/useDatabase';
+
+import {launchImageLibrary} from 'react-native-image-picker';
 
 const {width} = Dimensions.get('window');
 
@@ -55,6 +58,32 @@ const App = () => {
   const removeHero = async (hero_name: string) => {
     const found = await db.heroes.find().where('name').eq(hero_name);
     await found.remove();
+  };
+
+  const addHeroImage = async (hero_name: string) => {
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        includeBase64: true,
+      },
+      async (response: any) => {
+        const base64: string = response.base64;
+        const didCancel: boolean = response.didCancel;
+        const fileName: string = response.fileName;
+        if (!didCancel) {
+          const found = await db.heroes
+            .find()
+            .where('name')
+            .eq(hero_name)
+            .exec();
+          await found[0].putAttachment({
+            id: fileName,
+            data: base64,
+            type: 'image/jpg',
+          });
+        }
+      },
+    );
   };
 
   const getRandomColor = () => {
@@ -99,6 +128,7 @@ const App = () => {
               />
               <Text style={styles.heroName}>{hero.name}</Text>
             </View>
+            <Button title="Add Image" onPress={() => addHeroImage(hero.name)} />
             <TouchableOpacity onPress={() => removeHero(hero.name)}>
               <Image
                 style={styles.plusImage}
