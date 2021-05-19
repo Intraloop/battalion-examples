@@ -256,6 +256,10 @@ PODS:
     - React-Core
   - react-native-image-picker (3.6.0):
     - React-Core
+  - react-native-quick-base64 (0.1.4):
+    - React-Core
+  - react-native-quick-md5 (1.0.2):
+    - React-Core
   - React-perflogger (0.64.1)
   - React-RCTActionSheet (0.64.1):
     - React-Core/RCTActionSheetHeaders (= 0.64.1)
@@ -365,6 +369,8 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
+  - react-native-quick-md5 (from `../node_modules/react-native-quick-md5`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
   - React-RCTAnimation (from `../node_modules/react-native/Libraries/NativeAnimation`)
@@ -430,6 +436,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-get-random-values"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-quick-base64:
+    :path: "../node_modules/react-native-quick-base64"
+  react-native-quick-md5:
+    :path: "../node_modules/react-native-quick-md5"
   React-perflogger:
     :path: "../node_modules/react-native/ReactCommon/reactperflogger"
   React-RCTActionSheet:
@@ -488,6 +498,8 @@ SPEC CHECKSUMS:
   React-jsinspector: 500a59626037be5b3b3d89c5151bc3baa9abf1a9
   react-native-get-random-values: 237bffb1c7e05fb142092681531810a29ba53015
   react-native-image-picker: 5bb3325530fd4dc3053a77a73d4f65b6649de820
+  react-native-quick-base64: 4b97fd2c01032b0d9305c4a0cd91c3fe69e7e4d8
+  react-native-quick-md5: c670d567bacb1a7f96c9e1243436d37998bb73d0
   React-perflogger: aad6d4b4a267936b3667260d1f649b6f6069a675
   React-RCTActionSheet: fc376be462c9c8d6ad82c0905442fd77f82a9d2a
   React-RCTAnimation: ba0a1c3a2738be224a08092fa7f1b444ab77d309

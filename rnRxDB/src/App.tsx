@@ -26,6 +26,21 @@ const App = () => {
   const [name, setName] = useState('');
   const {db, loading} = useDatabase();
 
+  React.useEffect(() => {
+    console.log('global.btoa: ', global.btoa);
+    console.log('global.base64FromArrayBuffer:', global.base64FromArrayBuffer);
+    if (global.base64FromArrayBuffer) {
+      // setResult('Running..');
+      // runPouchDB().then(() => setResult('Done!'));
+      console.log('global base64FromArrayBuffer is working!');
+    } else {
+      console.warn('global.base64FromArrayBuffer is not defined');
+      console.warn(
+        'global.base64FromArrayBuffer is not defined. Reload the app.',
+      );
+    }
+  }, []);
+
   useEffect(() => {
     const subs: Subscription[] = [];
     if (db && !loading) {
