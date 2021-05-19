@@ -92,6 +92,7 @@ const App = () => {
             .eq(hero_name)
             .exec();
           await found[0].putAttachment({
+            // calling FileReader.readAsArrayBuffer here
             id: fileName,
             data: base64,
             type: 'image/jpg',
