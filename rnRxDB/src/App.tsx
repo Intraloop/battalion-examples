@@ -26,21 +26,6 @@ const App = () => {
   const [name, setName] = useState('');
   const {db, loading} = useDatabase();
 
-  React.useEffect(() => {
-    console.log('global.btoa: ', global.btoa);
-    console.log('global.base64FromArrayBuffer:', global.base64FromArrayBuffer);
-    if (global.base64FromArrayBuffer) {
-      // setResult('Running..');
-      // runPouchDB().then(() => setResult('Done!'));
-      console.log('global base64FromArrayBuffer is working!');
-    } else {
-      console.warn('global.base64FromArrayBuffer is not defined');
-      console.warn(
-        'global.base64FromArrayBuffer is not defined. Reload the app.',
-      );
-    }
-  }, []);
-
   useEffect(() => {
     const subs: Subscription[] = [];
     if (db && !loading) {
@@ -91,13 +76,32 @@ const App = () => {
             .where('name')
             .eq(hero_name)
             .exec();
-          await found[0].putAttachment({
-            // calling FileReader.readAsArrayBuffer here
-            id: fileName,
-            data: base64,
-            type: 'image/jpg',
-          });
+          console.log('_id: ', found[0].get('_id'));
+          // await found[0].putAttachment({
+          //   // calling FileReader.readAsArrayBuffer here
+          //   id: fileName,
+          //   data: base64,
+          //   type: 'image/jpg',
+          // });
+          // await db.heroes.pouch.putAttachment(
+          //   found[0].get('_id'),
+          //   fileName,
+          //   '1',
+          //   base64,
+          //   'image/jpg',
+          // );
         }
+
+        // const att = await db.heroes.pouch.putAttachment(
+        //   found._id,
+        //   'image',
+        //   found._rev,
+        //   response.base64,
+        //   response.type,
+        // );
+
+        //     const found = await db.heroes.pouch.get(hero.name);
+        // const att = await db.heroes.pouch.getAttachment(found._id, 'image');
       },
     );
   };
