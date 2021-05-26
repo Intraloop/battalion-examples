@@ -1,4 +1,5 @@
-import {shim as shimBase64} from 'react-native-quick-base64';
+import 'react-native-get-random-values';
+import {decode, encode} from 'base-64';
 
 if (typeof process === 'undefined') {
   global.process = require('process');
@@ -11,5 +12,12 @@ if (typeof process === 'undefined') {
   }
 }
 
-shimBase64();
+if (!global.btoa) {
+  global.btoa = encode;
+}
+
+if (!global.atob) {
+  global.atob = decode;
+}
+
 process.browser = true;

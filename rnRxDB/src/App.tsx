@@ -76,22 +76,22 @@ const App = () => {
             .where('name')
             .eq(hero_name)
             .exec();
-          console.log('_id: ', found[0].get('_id'));
-          // await found[0].putAttachment({
-          //   // calling FileReader.readAsArrayBuffer here
-          //   id: fileName,
-          //   data: base64,
-          //   type: 'image/jpg',
-          // });
-          // await db.heroes.pouch.putAttachment(
-          //   found[0].get('_id'),
-          //   fileName,
-          //   '1',
-          //   base64,
-          //   'image/jpg',
-          // );
-        }
+          console.log('_id: ', found[0]);
 
+          await db.heroes.pouch.putAttachment(
+            hero_name,
+            fileName,
+            '1',
+            base64,
+            'image/jpg',
+          );
+        }
+        // await found[0].putAttachment({
+        //   // calling FileReader.readAsArrayBuffer here
+        //   id: fileName,
+        //   data: base64,
+        //   type: 'image/jpg',
+        // });
         // const att = await db.heroes.pouch.putAttachment(
         //   found._id,
         //   'image',
