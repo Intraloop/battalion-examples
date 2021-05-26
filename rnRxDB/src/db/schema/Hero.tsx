@@ -23,5 +23,8 @@ export const HeroSchema: RxJsonSchema<Hero> = {
       type: 'string',
     },
   },
+  attachments: {
+    encrypted: false,
+  },
   required: ['color'],
 };

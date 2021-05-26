@@ -10,7 +10,9 @@ import {
   Image,
   TextInput,
   Dimensions,
+  Button,
 } from 'react-native';
+import {launchImageLibrary} from 'react-native-image-picker';
 
 import {Subscription} from 'rxjs';
 import {Hero} from './db/schema/Hero';
@@ -22,6 +24,7 @@ const App = () => {
   const [heroes, setHeroes] = useState<Hero[]>([]);
   const [name, setName] = useState('');
   const {db, loading} = useDatabase();
+  const [imageStr, setImageStr] = useState(null);
 
   useEffect(() => {
     const subs: Subscription[] = [];
@@ -66,6 +69,28 @@ const App = () => {
     return color;
   };
 
+  const uploadImage = hero => async response => {
+    try {
+      const found = await db.heroes.pouch.get(hero.name);
+      const att = await db.heroes.pouch.putAttachment(
+        found._id,
+        'image',
+        found._rev,
+        response.base64,
+        response.type,
+      );
+    } catch (e) {
+      console.log('err', e);
+    }
+  };
+
+  const getImage = hero => async () => {
+    const found = await db.heroes.pouch.get(hero.name);
+    const att = await db.heroes.pouch.getAttachment(found._id, 'image');
+
+    setImageStr(att);
+  };
+
   return (
     <SafeAreaView style={styles.topContainer}>
       <StatusBar backgroundColor="#55C7F7" barStyle="light-content" />
@@ -87,24 +112,51 @@ const App = () => {
         </View>
         {heroes.length === 0 && <Text>No heroes to display ...</Text>}
         {heroes.map((hero, index) => (
-          <View style={styles.card} key={index}>
-            <View style={styles.row}>
-              <View
-                style={[
-                  styles.colorBadge,
-                  {
-                    backgroundColor: hero.color,
-                  },
-                ]}
-              />
-              <Text style={styles.heroName}>{hero.name}</Text>
+          <View key={index}>
+            <View style={styles.card}>
+              <View style={styles.row}>
+                <View
+                  style={[
+                    styles.colorBadge,
+                    {
+                      backgroundColor: hero.color,
+                    },
+                  ]}
+                />
+                <Text style={styles.heroName}>{hero.name}</Text>
+              </View>
+              <TouchableOpacity onPress={() => removeHero(hero.name)}>
+                <Image
+                  style={styles.plusImage}
+                  source={require('../assets/minus.png')}
+                />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={() => removeHero(hero.name)}>
-              <Image
-                style={styles.plusImage}
-                source={require('../assets/minus.png')}
+            <View style={styles.card}>
+              <Button
+                title="Select image"
+                onPress={() =>
+                  launchImageLibrary(
+                    {
+                      mediaType: 'photo',
+                      includeBase64: true,
+                      maxHeight: 200,
+                      maxWidth: 200,
+                    },
+                    uploadImage(hero),
+                  )
+                }
               />
-            </TouchableOpacity>
+              <Button title="Get image" onPress={getImage(hero)} />
+            </View>
+            {imageStr && (
+              <View style={styles.card}>
+                <Image
+                  source={{uri: `data:image/*;base64,${imageStr}`}}
+                  style={{height: 200, width: 200}}
+                />
+              </View>
+            )}
           </View>
         ))}
       </ScrollView>
