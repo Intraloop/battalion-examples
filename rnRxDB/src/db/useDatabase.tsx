@@ -1,71 +1,76 @@
-import {useEffect, useState} from 'react';
-import {addRxPlugin, createRxDatabase, removeRxDatabase, RxDatabase} from 'rxdb';
+import PouchDB from '@craftzdog/pouchdb-core-react-native';
+import HttpPouch from 'pouchdb-adapter-http';
+import replication from '@craftzdog/pouchdb-replication-react-native';
+import mapreduce from 'pouchdb-mapreduce';
+
 import SQLite from 'react-native-sqlite-2';
 import SQLiteAdapterFactory from 'pouchdb-adapter-react-native-sqlite';
-import {HeroCollection, HeroSchema} from './schema/Hero';
+
+import {useEffect, useState} from 'react';
 
 const SQLiteAdapter = SQLiteAdapterFactory(SQLite);
 
-addRxPlugin(SQLiteAdapter);
-addRxPlugin(require('pouchdb-adapter-http'));
-
-type Collections = {
-  heroes: HeroCollection;
-};
+PouchDB.plugin(HttpPouch)
+  .plugin(replication)
+  .plugin(mapreduce)
+  .plugin(SQLiteAdapter);
 
 const dbName = 'heroes';
 const syncUrl = 'http://admin:password@localhost:5984/';
 
-console.log('remote db: ', syncUrl + dbName);
-
 const useDatabase = () => {
-  const [db, setDb] = useState<RxDatabase<Collections>>(undefined);
+  const [db, setDb] = useState<any>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState();
 
+  const openDB = () => {
+    return new PouchDB(dbName, { adapter: 'react-native-sqlite' });
+  };
+
+  const openRemoteDB = () => {
+    return new PouchDB(syncUrl + dbName + '/');
+  };
+
+  const resetDB = async () => {
+    const db = openDB();
+    return db.destroy();
+  };
+
   useEffect(() => {
     const create_db = async () => {
-      setLoading(true);
       try {
-        await removeRxDatabase(dbName, 'react-native-sqlite');
-        const rxdb = await createRxDatabase<Collections>({
-          name: dbName,
-          adapter: 'react-native-sqlite',
-          multiInstance: false,
+        setLoading(true);
+        // uncomment line below to clear local db in case of conflicts
+        // await resetDB();
+        const db = await openDB();
+        console.log('db info:', await db.info());
+        const remotedb = openRemoteDB();
+
+        db.changes({
+          since: 'now',
+          live: true,
+        }).on('change', change => {
+          console.log('change:', change);
         });
-        await rxdb.addCollections({
-          heroes: {
-            schema: HeroSchema,
-          },
+
+        db.sync(syncUrl + dbName + '/', {
+          live: true,
+          retry: true
+        }).on('change', (change) => {
+          console.log('sync change:', change);
+        }).on('paused', () => {
+          console.log('sync paused:');
+        }).on('active', (active) => {
+          console.log('sync active:', active);
+        }).on('denied', (denied) => {
+          console.log('sync denied:', denied);
+        }).on('complete', (complete) => {
+          console.log('sync complete:', complete)
+        }).on('error', (err) => {
+          console.log('sync error', err);
         });
-        const replicationState = rxdb.heroes.sync({
-          remote: syncUrl + dbName + '/',
-          options: {
-            live: true,
-            retry: true,
-          },
-          waitForLeadership: false,
-        });
-        replicationState.change$.subscribe(change =>
-          console.log('change: ', change),
-        );
-        replicationState.docs$.subscribe(docData =>
-          console.log('doc: ', docData),
-        );
-        replicationState.denied$.subscribe(docData =>
-          console.log('denied: ', docData),
-        );
-        replicationState.active$.subscribe(active =>
-          console.log('active: ', active),
-        );
-        replicationState.alive$.subscribe(alive =>
-          console.log('alive: ', alive),
-        );
-        replicationState.complete$.subscribe(completed =>
-          console.log('completed: ', completed),
-        );
-        replicationState.error$.subscribe(err => console.dir('error: ', err));
-        setDb(rxdb);
+        
+        setDb(db);
       } catch (err) {
         setError(err);
         console.log('error: ', err);

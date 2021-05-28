@@ -14,32 +14,24 @@ import {
 } from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
 
-import {Subscription} from 'rxjs';
-import {Hero} from './db/schema/Hero';
 import useDatabase from './db/useDatabase';
 
 const {width} = Dimensions.get('window');
 
 const App = () => {
-  const [heroes, setHeroes] = useState<Hero[]>([]);
-  const [name, setName] = useState('');
   const {db, loading} = useDatabase();
-  const [imageStr, setImageStr] = useState(null);
+  const [name, setName] = useState('');
+  const [foundDocs, setFoundDocs] = useState([]);
+  const fetchDocs = () => {
+    if (db) {
+      db.allDocs({include_docs: true, attachments: true}).then(docs => {
+        setFoundDocs(docs.rows);
+      });
+    }
+  }
 
   useEffect(() => {
-    const subs: Subscription[] = [];
-    if (db && !loading) {
-      const sub = db.heroes.find().$.subscribe(_heroes => {
-        if (_heroes) {
-          setHeroes(_heroes);
-        }
-      });
-      subs.push(sub);
-    }
-
-    return () => {
-      subs.forEach(sub => sub.unsubscribe());
-    };
+    fetchDocs();
   }, [db, loading]);
 
   if (!db && loading) {
@@ -50,14 +42,15 @@ const App = () => {
     const color = getRandomColor();
     if (name !== '') {
       console.log(`addHero: name: ${name}, color: ${color}`);
-      await db.heroes.insert({name: name, color: color});
+      await db.post({name, color});
       setName('');
     }
+    fetchDocs();
   };
 
-  const removeHero = async (hero_name: string) => {
-    const found = await db.heroes.find().where('name').eq(hero_name);
-    await found.remove();
+  const removeHero = async hero => {
+    await db.remove(hero.doc._id, hero.doc._rev);
+    await fetchDocs();
   };
 
   const getRandomColor = () => {
@@ -70,25 +63,8 @@ const App = () => {
   };
 
   const uploadImage = hero => async response => {
-    try {
-      const found = await db.heroes.pouch.get(hero.name);
-      const att = await db.heroes.pouch.putAttachment(
-        found._id,
-        'image',
-        found._rev,
-        response.base64,
-        response.type,
-      );
-    } catch (e) {
-      console.log('err', e);
-    }
-  };
-
-  const getImage = hero => async () => {
-    const found = await db.heroes.pouch.get(hero.name);
-    const att = await db.heroes.pouch.getAttachment(found._id, 'image');
-
-    setImageStr(att);
+    await db.putAttachment(hero.doc._id, 'image', hero.doc._rev, response.base64, response.type);
+    await fetchDocs();
   };
 
   return (
@@ -110,8 +86,8 @@ const App = () => {
             onChangeText={text => setName(text)}
           />
         </View>
-        {heroes.length === 0 && <Text>No heroes to display ...</Text>}
-        {heroes.map((hero, index) => (
+        {foundDocs.length === 0 && <Text>No heroes to display ...</Text>}
+        {!!foundDocs.length && foundDocs.map((hero, index) => (
           <View key={index}>
             <View style={styles.card}>
               <View style={styles.row}>
@@ -119,13 +95,13 @@ const App = () => {
                   style={[
                     styles.colorBadge,
                     {
-                      backgroundColor: hero.color,
+                      backgroundColor: hero.doc.color,
                     },
                   ]}
                 />
-                <Text style={styles.heroName}>{hero.name}</Text>
+                <Text style={styles.heroName}>{hero.doc.name}</Text>
               </View>
-              <TouchableOpacity onPress={() => removeHero(hero.name)}>
+              <TouchableOpacity onPress={() => removeHero(hero)}>
                 <Image
                   style={styles.plusImage}
                   source={require('../assets/minus.png')}
@@ -140,19 +116,18 @@ const App = () => {
                     {
                       mediaType: 'photo',
                       includeBase64: true,
-                      maxHeight: 200,
-                      maxWidth: 200,
+                      maxHeight: 800,
+                      maxWidth: 800,
                     },
                     uploadImage(hero),
                   )
                 }
               />
-              <Button title="Get image" onPress={getImage(hero)} />
             </View>
-            {imageStr && (
+            {!!hero.doc._attachments?.image && (
               <View style={styles.card}>
                 <Image
-                  source={{uri: `data:image/*;base64,${imageStr}`}}
+                  source={{uri: `data:image/*;base64,${hero.doc._attachments?.image?.data}`}}
                   style={{height: 200, width: 200}}
                 />
               </View>
