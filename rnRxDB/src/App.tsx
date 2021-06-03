@@ -14,24 +14,33 @@ import {
 
 import {Subscription} from 'rxjs';
 import {Hero} from './db/schema/Hero';
+import {Villain} from './db/schema/Villain';
 import useDatabase from './db/useDatabase';
 
 const {width} = Dimensions.get('window');
 
 const App = () => {
   const [heroes, setHeroes] = useState<Hero[]>([]);
-  const [name, setName] = useState('');
+  const [villains, setVillains] = useState<Villain[]>([]);
+  const [heroName, setHeroName] = useState('');
+  const [villainName, setVillainName] = useState('');
   const {db, loading} = useDatabase();
 
   useEffect(() => {
     const subs: Subscription[] = [];
     if (db && !loading) {
-      const sub = db.heroes.find().$.subscribe(_heroes => {
+      const hereos_sub = db.heroes.find().$.subscribe(_heroes => {
         if (_heroes) {
           setHeroes(_heroes);
         }
       });
-      subs.push(sub);
+      subs.push(hereos_sub);
+      const villains_sub = db.villains.find().$.subscribe(_villains => {
+        if (_villains) {
+          setVillains(_villains);
+        }
+      });
+      subs.push(villains_sub);
     }
 
     return () => {
@@ -45,15 +54,29 @@ const App = () => {
 
   const addHero = async () => {
     const color = getRandomColor();
-    if (name !== '') {
-      console.log(`addHero: name: ${name}, color: ${color}`);
-      await db.heroes.insert({name: name, color: color});
-      setName('');
+    if (heroName !== '') {
+      console.log(`addHero: name: ${heroName}, color: ${color}`);
+      await db.heroes.insert({name: heroName, color: color});
+      setHeroName('');
+    }
+  };
+
+  const addVillain = async () => {
+    const color = getRandomColor();
+    if (villainName !== '') {
+      console.log(`addVillain: name: ${villainName}, color: ${color}`);
+      await db.villains.insert({name: villainName, color: color});
+      setVillainName('');
     }
   };
 
   const removeHero = async (hero_name: string) => {
     const found = await db.heroes.find().where('name').eq(hero_name);
+    await found.remove();
+  };
+
+  const removeVillain = async (villain_name: string) => {
+    const found = await db.villains.find().where('name').eq(villain_name);
     await found.remove();
   };
 
@@ -70,7 +93,6 @@ const App = () => {
     <SafeAreaView style={styles.topContainer}>
       <StatusBar backgroundColor="#55C7F7" barStyle="light-content" />
       <Text style={styles.title}>Add your favorite hero!</Text>
-
       <ScrollView style={styles.heroesList}>
         <View style={styles.card}>
           <TouchableOpacity onPress={addHero}>
@@ -81,8 +103,8 @@ const App = () => {
           </TouchableOpacity>
           <TextInput
             style={styles.input}
-            value={name}
-            onChangeText={text => setName(text)}
+            value={heroName}
+            onChangeText={text => setHeroName(text)}
           />
         </View>
         {heroes.length === 0 && <Text>No heroes to display ...</Text>}
@@ -100,6 +122,45 @@ const App = () => {
               <Text style={styles.heroName}>{hero.name}</Text>
             </View>
             <TouchableOpacity onPress={() => removeHero(hero.name)}>
+              <Image
+                style={styles.plusImage}
+                source={require('../assets/minus.png')}
+              />
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
+
+      <Text style={styles.title}>Add your favorite villain!</Text>
+      <ScrollView style={styles.heroesList}>
+        <View style={styles.card}>
+          <TouchableOpacity onPress={addVillain}>
+            <Image
+              style={styles.plusImage}
+              source={require('../assets/add.png')}
+            />
+          </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            value={villainName}
+            onChangeText={text => setVillainName(text)}
+          />
+        </View>
+        {villains.length === 0 && <Text>No villains to display ...</Text>}
+        {villains.map((villain, index) => (
+          <View style={styles.card} key={index}>
+            <View style={styles.row}>
+              <View
+                style={[
+                  styles.colorBadge,
+                  {
+                    backgroundColor: villain.color,
+                  },
+                ]}
+              />
+              <Text style={styles.heroName}>{villain.name}</Text>
+            </View>
+            <TouchableOpacity onPress={() => removeVillain(villain.name)}>
               <Image
                 style={styles.plusImage}
                 source={require('../assets/minus.png')}
