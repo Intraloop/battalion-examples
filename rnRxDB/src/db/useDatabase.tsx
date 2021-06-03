@@ -9,6 +9,7 @@ import SQLite from 'react-native-sqlite-2';
 import SQLiteAdapterFactory from 'pouchdb-adapter-react-native-sqlite';
 import {HeroCollection, HeroSchema} from './schema/Hero';
 import {VillainCollection, VillainSchema} from './schema/Villain';
+import {CrewCollection, CrewSchema} from './schema/Crew';
 
 const SQLiteAdapter = SQLiteAdapterFactory(SQLite);
 
@@ -18,6 +19,7 @@ addRxPlugin(require('pouchdb-adapter-http'));
 type Collections = {
   heroes: HeroCollection;
   villains: VillainCollection;
+  crews: CrewCollection;
 };
 
 const dbName = 'everything';
@@ -85,9 +87,13 @@ const useDatabase = () => {
           villains: {
             schema: VillainSchema,
           },
+          crews: {
+            schema: CrewSchema,
+          },
         });
         configureSync('heroes', 'Hero', rxdb);
         configureSync('villains', 'Villain', rxdb);
+        configureSync('crews', 'Crew', rxdb);
         setDb(rxdb);
       } catch (err) {
         setError(err);
