@@ -3,6 +3,7 @@ import {RxCollection, RxDocument, RxJsonSchema} from 'rxdb';
 export type Crew = {
   name: string;
   members: string[];
+  crew_type: string;
   type: string;
 };
 
@@ -23,13 +24,16 @@ export const CrewSchema: RxJsonSchema<Crew> = {
     members: {
       type: 'array',
       items: {
-        type: 'number',
+        type: 'string',
       },
     },
     type: {
       type: 'string',
       default: 'Crew',
     },
+    crew_type: {
+      type: 'string',
+    },
   },
-  required: ['type'],
+  required: ['type', 'crew_type'],
 };
