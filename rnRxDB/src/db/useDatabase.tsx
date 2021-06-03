@@ -66,7 +66,7 @@ const useDatabase = () => {
     const create_db = async () => {
       setLoading(true);
       try {
-        // await removeRxDatabase(dbName, 'react-native-sqlite');
+        await removeRxDatabase(dbName, 'react-native-sqlite');
         const rxdb = await createRxDatabase<Collections>({
           name: dbName,
           adapter: 'react-native-sqlite',
@@ -80,8 +80,8 @@ const useDatabase = () => {
             schema: VillainSchema,
           },
         });
-        configureSync('heroes');
-        configureSync('villains');
+        // configureSync('heroes');
+        // configureSync('villains');
         setDb(rxdb);
       } catch (err) {
         setError(err);
@@ -89,10 +89,11 @@ const useDatabase = () => {
       }
       setLoading(false);
     };
-    if (!db && !loading) {
-      create_db();
-    }
-  }, [db, loading]);
+    create_db();
+    // if (!db && !loading) {
+    //   create_db();
+    // }
+  }, []);
 
   return {db, loading, error};
 };
