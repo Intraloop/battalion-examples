@@ -1,19 +1,19 @@
 import {RxCollection, RxDocument, RxJsonSchema} from 'rxdb';
 
-export type Hero = {
+export type Villain = {
   name: string;
   color: string;
   type: string;
 };
 
-export type HeroDocument = RxDocument<Hero>;
+export type VillainDocument = RxDocument<Villain>;
 
-export type HeroCollection = RxCollection<Hero>;
+export type VillainCollection = RxCollection<Villain>;
 
-export const HeroSchema: RxJsonSchema<Hero> = {
+export const VillainSchema: RxJsonSchema<Villain> = {
   version: 0,
-  title: 'hero schema',
-  description: 'describes a simple hero',
+  title: 'villain schema',
+  description: 'describes a simple villain',
   type: 'object',
   properties: {
     name: {
@@ -25,8 +25,11 @@ export const HeroSchema: RxJsonSchema<Hero> = {
     },
     type: {
       type: 'string',
-      default: 'Hero',
+      default: 'Villain',
     },
+  },
+  attachments: {
+    encrypted: false,
   },
   required: ['color', 'type'],
 };

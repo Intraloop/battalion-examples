@@ -1,8 +1,14 @@
 import {useEffect, useState} from 'react';
-import {addRxPlugin, createRxDatabase, RxDatabase} from 'rxdb';
+import {
+  addRxPlugin,
+  createRxDatabase,
+  removeRxDatabase,
+  RxDatabase,
+} from 'rxdb';
 import SQLite from 'react-native-sqlite-2';
 import SQLiteAdapterFactory from 'pouchdb-adapter-react-native-sqlite';
 import {HeroCollection, HeroSchema} from './schema/Hero';
+import {VillainCollection, VillainSchema} from './schema/Villain';
 
 const SQLiteAdapter = SQLiteAdapterFactory(SQLite);
 
@@ -11,9 +17,10 @@ addRxPlugin(require('pouchdb-adapter-http'));
 
 type Collections = {
   heroes: HeroCollection;
+  villains: VillainCollection;
 };
 
-const dbName = 'heroes';
+const dbName = 'everything';
 const syncUrl = 'http://admin:password@localhost:5984/';
 
 console.log('remote db: ', syncUrl + dbName);
@@ -24,9 +31,48 @@ const useDatabase = () => {
   const [error, setError] = useState();
 
   useEffect(() => {
+    const configureSync = (
+      collection: string,
+      type: string,
+      database: RxDatabase<Collections>,
+    ) => {
+      console.log('name: ', collection);
+      const replicationState = database[collection].sync({
+        remote: syncUrl + dbName + '/',
+        options: {
+          live: true,
+          retry: true,
+        },
+        waitForLeadership: false,
+        query: database[collection].find().where('type').eq(type),
+      });
+      replicationState.change$.subscribe(change =>
+        console.log(`${collection} change: `, change),
+      );
+      replicationState.docs$.subscribe(docData =>
+        console.log(`${collection} doc: `, docData),
+      );
+      replicationState.denied$.subscribe(docData =>
+        console.log(`${collection} denied: `, docData),
+      );
+      replicationState.active$.subscribe(active =>
+        console.log(`${collection} active: `, active),
+      );
+      replicationState.alive$.subscribe(alive =>
+        console.log(`${collection} alive: `, alive),
+      );
+      replicationState.complete$.subscribe(completed =>
+        console.log(`${collection} completed: `, completed),
+      );
+      replicationState.error$.subscribe(err =>
+        console.dir(`${collection} error: `, err),
+      );
+    };
+
     const create_db = async () => {
       setLoading(true);
       try {
+        await removeRxDatabase(dbName, 'react-native-sqlite');
         const rxdb = await createRxDatabase<Collections>({
           name: dbName,
           adapter: 'react-native-sqlite',
@@ -36,34 +82,12 @@ const useDatabase = () => {
           heroes: {
             schema: HeroSchema,
           },
-        });
-        const replicationState = rxdb.heroes.sync({
-          remote: syncUrl + dbName + '/',
-          options: {
-            live: true,
-            retry: true,
+          villains: {
+            schema: VillainSchema,
           },
-          waitForLeadership: false,
         });
-        replicationState.change$.subscribe(change =>
-          console.log('change: ', change),
-        );
-        replicationState.docs$.subscribe(docData =>
-          console.log('doc: ', docData),
-        );
-        replicationState.denied$.subscribe(docData =>
-          console.log('denied: ', docData),
-        );
-        replicationState.active$.subscribe(active =>
-          console.log('active: ', active),
-        );
-        replicationState.alive$.subscribe(alive =>
-          console.log('alive: ', alive),
-        );
-        replicationState.complete$.subscribe(completed =>
-          console.log('completed: ', completed),
-        );
-        replicationState.error$.subscribe(err => console.dir('error: ', err));
+        configureSync('heroes', 'Hero', rxdb);
+        configureSync('villains', 'Villain', rxdb);
         setDb(rxdb);
       } catch (err) {
         setError(err);
@@ -71,10 +95,8 @@ const useDatabase = () => {
       }
       setLoading(false);
     };
-    if (!db && !loading) {
-      create_db();
-    }
-  }, [db, loading]);
+    create_db();
+  }, []);
 
   return {db, loading, error};
 };
