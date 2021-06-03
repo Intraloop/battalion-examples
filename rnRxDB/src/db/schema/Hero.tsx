@@ -3,6 +3,7 @@ import {RxCollection, RxDocument, RxJsonSchema} from 'rxdb';
 export type Hero = {
   name: string;
   color: string;
+  type: string;
 };
 
 export type HeroDocument = RxDocument<Hero>;
@@ -22,6 +23,10 @@ export const HeroSchema: RxJsonSchema<Hero> = {
     color: {
       type: 'string',
     },
+    type: {
+      type: 'string',
+      default: 'Hero',
+    },
   },
-  required: ['color'],
+  required: ['color', 'type'],
 };

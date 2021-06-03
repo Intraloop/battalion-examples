@@ -31,14 +31,20 @@ const useDatabase = () => {
   const [error, setError] = useState();
 
   useEffect(() => {
-    const configureSync = (collection: string) => {
-      const replicationState = db[collection].sync({
+    const configureSync = (
+      collection: string,
+      type: string,
+      database: RxDatabase<Collections>,
+    ) => {
+      console.log('name: ', collection);
+      const replicationState = database[collection].sync({
         remote: syncUrl + dbName + '/',
         options: {
           live: true,
           retry: true,
         },
         waitForLeadership: false,
+        query: database[collection].find().where('type').eq(type),
       });
       replicationState.change$.subscribe(change =>
         console.log(`${collection} change: `, change),
@@ -80,8 +86,8 @@ const useDatabase = () => {
             schema: VillainSchema,
           },
         });
-        // configureSync('heroes');
-        // configureSync('villains');
+        configureSync('heroes', 'Hero', rxdb);
+        configureSync('villains', 'Villain', rxdb);
         setDb(rxdb);
       } catch (err) {
         setError(err);
@@ -90,9 +96,6 @@ const useDatabase = () => {
       setLoading(false);
     };
     create_db();
-    // if (!db && !loading) {
-    //   create_db();
-    // }
   }, []);
 
   return {db, loading, error};

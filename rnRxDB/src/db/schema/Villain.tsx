@@ -3,6 +3,7 @@ import {RxCollection, RxDocument, RxJsonSchema} from 'rxdb';
 export type Villain = {
   name: string;
   color: string;
+  type: string;
 };
 
 export type VillainDocument = RxDocument<Villain>;
@@ -22,9 +23,13 @@ export const VillainSchema: RxJsonSchema<Villain> = {
     color: {
       type: 'string',
     },
+    type: {
+      type: 'string',
+      default: 'Villain',
+    },
   },
   attachments: {
     encrypted: false,
   },
-  required: ['color'],
+  required: ['color', 'type'],
 };
